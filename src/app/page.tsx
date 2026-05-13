@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { supabase, Article, ArticleStatus, RejectReason } from "@/lib/supabase";
+import { getSupabase, Article, ArticleStatus, RejectReason } from "@/lib/supabase";
 
 // ============================================
 // 상수
@@ -55,6 +55,7 @@ export default function Dashboard() {
   // 기사 로드
   const fetchArticles = useCallback(async () => {
     setLoading(true);
+    const supabase = getSupabase();
     let query = supabase
       .from("articles")
       .select("*")
@@ -105,6 +106,7 @@ export default function Dashboard() {
     };
     if (rejectReason) update.reject_reason = rejectReason;
 
+    const supabase = getSupabase();
     const { error } = await supabase
       .from("articles")
       .update(update)
@@ -128,6 +130,7 @@ export default function Dashboard() {
     }
 
     const now = new Date().toISOString();
+    const supabase = getSupabase();
     const { error } = await supabase
       .from("articles")
       .update({ status: "approved", reviewed_at: now })
@@ -154,6 +157,7 @@ export default function Dashboard() {
     if (ids.length === 0) return;
 
     const now = new Date().toISOString();
+    const supabase = getSupabase();
     const { error } = await supabase
       .from("articles")
       .update({ status: "rejected", reject_reason: reason, reviewed_at: now })
@@ -192,6 +196,7 @@ export default function Dashboard() {
     }
 
     const now = new Date().toISOString();
+    const supabase = getSupabase();
     const { error } = await supabase
       .from("articles")
       .update({ status: "approved", reviewed_at: now })
