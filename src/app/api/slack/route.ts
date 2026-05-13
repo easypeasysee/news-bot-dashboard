@@ -1,11 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_KEY!
-);
-
 const SLACK_WEBHOOKS: Record<string, string> = {
   brand: process.env.SLACK_WEBHOOK_URL || "",
   news: process.env.SLACK_WEBHOOK_URL_2 || "",
@@ -60,6 +55,10 @@ function buildSlackMessage(articles: any[]) {
 
 export async function POST(request: NextRequest) {
   try {
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_KEY!
+    );
     const { articleIds, channel = "brand" } = await request.json();
 
     if (!articleIds || articleIds.length === 0) {
