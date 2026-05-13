@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
+
+export const dynamic = "force-dynamic";
 const SLACK_WEBHOOKS: Record<string, string> = {
   brand: process.env.SLACK_WEBHOOK_URL || "",
   news: process.env.SLACK_WEBHOOK_URL_2 || "",
