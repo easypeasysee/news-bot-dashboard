@@ -48,6 +48,7 @@ export default function Dashboard() {
   const [sourceFilter, setSourceFilter] = useState<string>("all");
   const [keywordTypeFilter, setKeywordTypeFilter] = useState<string>("all");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [selectedKeywords, setSelectedKeywords] = useState<Set<string>>(new Set());
   const [sending, setSending] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [showDuplicates, setShowDuplicates] = useState(false);
@@ -243,10 +244,10 @@ export default function Dashboard() {
 
   // 전체 선택 / 해제
   const toggleSelectAll = () => {
-    if (selectedIds.size === articles.length) {
+    if (selectedIds.size === filteredArticles.length) {
       setSelectedIds(new Set());
     } else {
-      setSelectedIds(new Set(articles.map((a) => a.id)));
+      setSelectedIds(new Set(filteredArticles.map((a) => a.id)));
     }
   };
 
@@ -267,13 +268,29 @@ export default function Dashboard() {
     ([, group]) => group.length > 1
   );
 
+  // 키워드 필터
+  const uniqueKeywords = [...new Set(articles.map((a) => a.keyword))].sort();
+  const filteredArticles =
+    selectedKeywords.size === 0
+      ? articles
+      : articles.filter((a) => selectedKeywords.has(a.keyword));
+
+  const toggleKeyword = (kw: string) => {
+    setSelectedKeywords((prev) => {
+      const next = new Set(prev);
+      if (next.has(kw)) next.delete(kw);
+      else next.add(kw);
+      return next;
+    });
+  };
+
   // 통계
   const stats = {
-    total: articles.length,
-    pending: articles.filter((a) => a.status === "pending").length,
-    approved: articles.filter((a) => a.status === "approved").length,
-    rejected: articles.filter((a) => a.status === "rejected").length,
-    sent: articles.filter((a) => a.status === "sent").length,
+    total: filteredArticles.length,
+    pending: filteredArticles.filter((a) => a.status === "pending").length,
+    approved: filteredArticles.filter((a) => a.status === "approved").length,
+    rejected: filteredArticles.filter((a) => a.status === "rejected").length,
+    sent: filteredArticles.filter((a) => a.status === "sent").length,
     duplicateGroups: multiDupGroups.length,
   };
 
@@ -390,6 +407,35 @@ export default function Dashboard() {
             </button>
           </div>
 
+          {/* 키워드 칩 필터 */}
+          {uniqueKeywords.length > 0 && (
+            <div className="flex flex-wrap gap-1 mt-3 pt-3 border-t border-gray-100">
+              <button
+                onClick={() => setSelectedKeywords(new Set())}
+                className={`px-2.5 py-1 text-xs rounded-full transition ${
+                  selectedKeywords.size === 0
+                    ? "bg-emerald-600 text-white"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                }`}
+              >
+                전체
+              </button>
+              {uniqueKeywords.map((kw) => (
+                <button
+                  key={kw}
+                  onClick={() => toggleKeyword(kw)}
+                  className={`px-2.5 py-1 text-xs rounded-full transition ${
+                    selectedKeywords.has(kw)
+                      ? "bg-emerald-600 text-white"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  }`}
+                >
+                  {kw}
+                </button>
+              ))}
+            </div>
+          )}
+
           {/* 일괄 액션 */}
           {selectedIds.size > 0 && (
             <div className="flex gap-2 mt-3 pt-3 border-t border-gray-100">
@@ -427,7 +473,7 @@ export default function Dashboard() {
                 onClick={toggleSelectAll}
                 className="px-3 py-1 text-xs bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-md"
               >
-                {selectedIds.size === articles.length
+                {selectedIds.size === filteredArticles.length
                   ? "전체 해제"
                   : "전체 선택"}
               </button>
@@ -503,13 +549,13 @@ export default function Dashboard() {
         {/* 기사 목록 */}
         {loading ? (
           <div className="text-center py-20 text-gray-400">로딩 중...</div>
-        ) : articles.length === 0 ? (
+        ) : filteredArticles.length === 0 ? (
           <div className="text-center py-20 text-gray-400">
             기사가 없습니다
           </div>
         ) : (
           <div className="space-y-2">
-            {articles.map((article) => (
+            {filteredArticles.map((article) => (
               <ArticleRow
                 key={article.id}
                 article={article}
@@ -563,20 +609,6 @@ function ArticleRow({
 }) {
   const [showRejectMenu, setShowRejectMenu] = useState(false);
 
-  const statusColors: Record<ArticleStatus, string> = {
-    pending: "bg-yellow-100 text-yellow-800",
-    approved: "bg-green-100 text-green-800",
-    rejected: "bg-red-100 text-red-800",
-    sent: "bg-blue-100 text-blue-800",
-  };
-
-  const statusLabels: Record<ArticleStatus, string> = {
-    pending: "대기",
-    approved: "승인",
-    rejected: "제외",
-    sent: "발송완료",
-  };
-
   return (
     <div
       className={`bg-white border rounded-lg p-4 transition ${
@@ -615,11 +647,6 @@ function ArticleRow({
                 {article.publisher}
               </span>
             )}
-            <span
-              className={`text-[10px] px-1.5 py-0.5 rounded ${statusColors[article.status]}`}
-            >
-              {statusLabels[article.status]}
-            </span>
             {!article.is_duplicate_primary && (
               <span className="text-[10px] bg-orange-100 text-orange-700 px-1.5 py-0.5 rounded">
                 중복 의심
