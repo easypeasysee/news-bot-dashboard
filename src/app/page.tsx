@@ -604,17 +604,21 @@ function ArticleRow({
         {/* 콘텐츠 */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
-            <span
-              className={`text-[10px] px-1.5 py-0.5 rounded ${statusColors[article.status]}`}
-            >
-              {statusLabels[article.status]}
+            <span className="text-[10px] bg-emerald-100 text-emerald-800 font-medium px-1.5 py-0.5 rounded">
+              {KEYWORD_TYPE_LABELS[article.keyword_type]}: {article.keyword}
             </span>
             <span className="text-[10px] bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded">
               {SOURCE_LABELS[article.source_type]}
             </span>
-            <span className="text-[10px] bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded">
-              {KEYWORD_TYPE_LABELS[article.keyword_type]}:{" "}
-              {article.keyword}
+            {article.publisher && (
+              <span className="text-[10px] bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded">
+                {article.publisher}
+              </span>
+            )}
+            <span
+              className={`text-[10px] px-1.5 py-0.5 rounded ${statusColors[article.status]}`}
+            >
+              {statusLabels[article.status]}
             </span>
             {!article.is_duplicate_primary && (
               <span className="text-[10px] bg-orange-100 text-orange-700 px-1.5 py-0.5 rounded">
@@ -639,7 +643,6 @@ function ArticleRow({
           )}
 
           <div className="flex items-center gap-3 mt-2 text-[11px] text-gray-400">
-            {article.publisher && <span>{article.publisher}</span>}
             {article.published_at && (
               <span>
                 {new Date(article.published_at).toLocaleDateString("ko-KR")}
