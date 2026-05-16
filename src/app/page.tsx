@@ -20,7 +20,6 @@ const KEYWORD_TYPE_LABELS: Record<string, string> = {
   sub: "서브",
   youtube: "YouTube",
 };
-
 const REJECT_REASONS: { value: RejectReason; label: string }[] = [
   { value: "duplicate", label: "중복" },
   { value: "irrelevant", label: "무관" },
@@ -29,13 +28,6 @@ const REJECT_REASONS: { value: RejectReason; label: string }[] = [
   { value: "other", label: "기타" },
 ];
 
-const STATUS_TABS: { value: ArticleStatus | "all"; label: string }[] = [
-  { value: "all", label: "전체" },
-  { value: "pending", label: "대기" },
-  { value: "approved", label: "승인" },
-  { value: "rejected", label: "제외" },
-  { value: "sent", label: "발송완료" },
-];
 
 // ============================================
 // 컴포넌트
@@ -46,7 +38,6 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<ArticleStatus | "all">("pending");
   const [sourceFilter, setSourceFilter] = useState<string>("all");
-  const [keywordTypeFilter, setKeywordTypeFilter] = useState<string>("all");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [selectedKeywords, setSelectedKeywords] = useState<Set<string>>(new Set());
   const [sending, setSending] = useState(false);
@@ -71,10 +62,6 @@ export default function Dashboard() {
       query = query.eq("source_type", sourceFilter);
     }
 
-    if (keywordTypeFilter !== "all") {
-      query = query.eq("keyword_type", keywordTypeFilter);
-    }
-
     const { data, error } = await query;
     if (error) {
       console.error("Fetch error:", error);
@@ -83,7 +70,7 @@ export default function Dashboard() {
       setArticles(data || []);
     }
     setLoading(false);
-  }, [activeTab, sourceFilter, keywordTypeFilter]);
+  }, [activeTab, sourceFilter]);
 
   useEffect(() => {
     fetchArticles();
@@ -329,13 +316,23 @@ export default function Dashboard() {
         {/* 통계 카드 */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
           {[
-            { label: "전체", value: stats.total, color: "bg-gray-100" },
-            { label: "대기", value: stats.pending, color: "bg-yellow-50 text-yellow-800" },
-            { label: "승인", value: stats.approved, color: "bg-green-50 text-green-800" },
-            { label: "제외", value: stats.rejected, color: "bg-red-50 text-red-800" },
-            { label: "중복 의심 그룹", value: stats.duplicateGroups, color: "bg-orange-50 text-orange-800" },
+            { label: "전체", value: stats.total, color: "bg-gray-100 text-gray-800", tabValue: "all" as ArticleStatus | "all" | null },
+            { label: "대기", value: stats.pending, color: "bg-yellow-50 text-yellow-800", tabValue: "pending" as ArticleStatus | "all" | null },
+            { label: "승인", value: stats.approved, color: "bg-green-50 text-green-800", tabValue: "approved" as ArticleStatus | "all" | null },
+            { label: "제외", value: stats.rejected, color: "bg-red-50 text-red-800", tabValue: "rejected" as ArticleStatus | "all" | null },
+            { label: "중복 의심 그룹", value: stats.duplicateGroups, color: "bg-orange-50 text-orange-800", tabValue: null },
           ].map((s) => (
-            <div key={s.label} className={`rounded-lg p-3 ${s.color}`}>
+            <div
+              key={s.label}
+              onClick={() => s.tabValue !== null ? setActiveTab(s.tabValue as ArticleStatus | "all") : setShowDuplicates((v) => !v)}
+              className={`rounded-lg p-3 cursor-pointer transition ${s.color} ${
+                s.tabValue !== null && activeTab === s.tabValue
+                  ? "ring-2 ring-emerald-500"
+                  : s.tabValue === null && showDuplicates
+                  ? "ring-2 ring-orange-400"
+                  : "hover:opacity-80"
+              }`}
+            >
               <div className="text-2xl font-bold">{s.value}</div>
               <div className="text-xs mt-1">{s.label}</div>
             </div>
@@ -345,25 +342,6 @@ export default function Dashboard() {
         {/* 필터 영역 */}
         <div className="bg-white rounded-lg border border-gray-200 p-4 mb-4">
           <div className="flex flex-wrap gap-4 items-center">
-            {/* 상태 탭 */}
-            <div className="flex gap-1">
-              {STATUS_TABS.map((tab) => (
-                <button
-                  key={tab.value}
-                  onClick={() => setActiveTab(tab.value)}
-                  className={`px-3 py-1 text-sm rounded-md transition ${
-                    activeTab === tab.value
-                      ? "bg-gray-900 text-white"
-                      : "bg-gray-100 hover:bg-gray-200 text-gray-700"
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              ))}
-            </div>
-
-            <div className="h-6 w-px bg-gray-200" />
-
             {/* 소스 필터 */}
             <select
               value={sourceFilter}
@@ -377,34 +355,6 @@ export default function Dashboard() {
                 </option>
               ))}
             </select>
-
-            {/* 키워드 타입 필터 */}
-            <select
-              value={keywordTypeFilter}
-              onChange={(e) => setKeywordTypeFilter(e.target.value)}
-              className="text-sm border border-gray-200 rounded-md px-2 py-1"
-            >
-              <option value="all">모든 키워드</option>
-              {Object.entries(KEYWORD_TYPE_LABELS).map(([val, label]) => (
-                <option key={val} value={val}>
-                  {label}
-                </option>
-              ))}
-            </select>
-
-            <div className="h-6 w-px bg-gray-200" />
-
-            {/* 중복 보기 토글 */}
-            <button
-              onClick={() => setShowDuplicates(!showDuplicates)}
-              className={`px-3 py-1 text-sm rounded-md transition ${
-                showDuplicates
-                  ? "bg-orange-100 text-orange-800"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-              }`}
-            >
-              중복 의심 보기 ({stats.duplicateGroups})
-            </button>
           </div>
 
           {/* 키워드 칩 필터 */}
