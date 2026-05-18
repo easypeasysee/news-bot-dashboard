@@ -47,7 +47,7 @@ export default function Dashboard() {
   const [showDuplicates, setShowDuplicates] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
 
-  // 기사 로드
+  // 기사 로드 (배치 전체 - 탭/소스 필터는 클라이언트에서 처리)
   const fetchArticles = useCallback(async () => {
     setLoading(true);
     const supabase = getSupabase();
@@ -71,14 +71,6 @@ export default function Dashboard() {
       query = query.eq("collect_batch_id", batchData.id);
     }
 
-    if (activeTab !== "all") {
-      query = query.eq("status", activeTab);
-    }
-
-    if (sourceFilter !== "all") {
-      query = query.eq("source_type", sourceFilter);
-    }
-
     const { data, error } = await query;
     if (error) {
       console.error("Fetch error:", error);
@@ -87,7 +79,7 @@ export default function Dashboard() {
       setArticles(data || []);
     }
     setLoading(false);
-  }, [activeTab, sourceFilter]);
+  }, []);
 
   useEffect(() => {
     fetchArticles();
@@ -273,12 +265,14 @@ export default function Dashboard() {
     ([, group]) => group.length > 1
   );
 
-  // 키워드 필터
+  // 클라이언트 필터 (탭 + 소스 + 키워드)
   const uniqueKeywords = [...new Set(articles.map((a) => a.keyword))].sort();
-  const filteredArticles =
-    selectedKeywords.size === 0
-      ? articles
-      : articles.filter((a) => selectedKeywords.has(a.keyword));
+  const filteredArticles = articles.filter((a) => {
+    if (activeTab !== "all" && a.status !== activeTab) return false;
+    if (sourceFilter !== "all" && a.source_type !== sourceFilter) return false;
+    if (selectedKeywords.size > 0 && !selectedKeywords.has(a.keyword)) return false;
+    return true;
+  });
 
   const toggleKeyword = (kw: string) => {
     setCurrentPage(1);
@@ -310,13 +304,13 @@ export default function Dashboard() {
     currentPage * PAGE_SIZE
   );
 
-  // 통계
+  // 통계 (탭 필터 무관하게 배치 전체 기준)
   const stats = {
-    total: filteredArticles.length,
-    pending: filteredArticles.filter((a) => a.status === "pending").length,
-    approved: filteredArticles.filter((a) => a.status === "approved").length,
-    rejected: filteredArticles.filter((a) => a.status === "rejected").length,
-    sent: filteredArticles.filter((a) => a.status === "sent").length,
+    total: articles.length,
+    pending: articles.filter((a) => a.status === "pending").length,
+    approved: articles.filter((a) => a.status === "approved").length,
+    rejected: articles.filter((a) => a.status === "rejected").length,
+    sent: articles.filter((a) => a.status === "sent").length,
     duplicateGroups: multiDupGroups.length,
   };
 
