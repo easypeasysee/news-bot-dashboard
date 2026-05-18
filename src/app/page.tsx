@@ -51,11 +51,25 @@ export default function Dashboard() {
   const fetchArticles = useCallback(async () => {
     setLoading(true);
     const supabase = getSupabase();
+
+    // 가장 최근 배치 ID 조회
+    const { data: batchData } = await supabase
+      .from("collect_batches")
+      .select("id")
+      .eq("status", "completed")
+      .order("completed_at", { ascending: false })
+      .limit(1)
+      .single();
+
     let query = supabase
       .from("articles")
       .select("*")
       .order("collected_at", { ascending: false })
       .limit(500);
+
+    if (batchData?.id) {
+      query = query.eq("collect_batch_id", batchData.id);
+    }
 
     if (activeTab !== "all") {
       query = query.eq("status", activeTab);
