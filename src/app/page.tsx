@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { getSupabase, Article, ArticleStatus, RejectReason } from "@/lib/supabase";
 
 // ============================================
@@ -548,6 +548,34 @@ export default function Dashboard() {
           </div>
         ) : (
           <>
+            {/* 리스트 헤더 - 전체 선택 */}
+            <div className="flex items-center gap-3 px-4 py-2 mb-1 bg-gray-50 rounded-lg border border-gray-200 text-xs text-gray-500">
+              <input
+                type="checkbox"
+                checked={pagedArticles.length > 0 && pagedArticles.every((a) => selectedIds.has(a.id))}
+                ref={(el) => {
+                  if (el) el.indeterminate = pagedArticles.some((a) => selectedIds.has(a.id)) && !pagedArticles.every((a) => selectedIds.has(a.id));
+                }}
+                onChange={() => {
+                  const allSelected = pagedArticles.every((a) => selectedIds.has(a.id));
+                  setSelectedIds((prev) => {
+                    const next = new Set(prev);
+                    pagedArticles.forEach((a) => allSelected ? next.delete(a.id) : next.add(a.id));
+                    return next;
+                  });
+                }}
+                className="rounded border-gray-300 cursor-pointer"
+              />
+              <span>
+                {pagedArticles.every((a) => selectedIds.has(a.id)) && pagedArticles.length > 0
+                  ? "이 페이지 전체 해제"
+                  : `이 페이지 전체 선택 (${pagedArticles.length}건)`}
+              </span>
+              {selectedIds.size > 0 && (
+                <span className="ml-auto text-emerald-600 font-medium">{selectedIds.size}건 선택됨</span>
+              )}
+            </div>
+
             <div className="space-y-2">
               {pagedArticles.map((article) => (
                 <ArticleRow
@@ -640,18 +668,22 @@ export default function Dashboard() {
 // 키워드 하이라이트 헬퍼
 // ============================================
 
-function highlight(text: string, keyword: string) {
+function highlight(text: string, keyword: string): React.ReactNode {
   if (!keyword || !text) return text;
   const escaped = keyword.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   const parts = text.split(new RegExp(`(${escaped})`, "gi"));
-  return parts.map((part, i) =>
-    part.toLowerCase() === keyword.toLowerCase() ? (
-      <strong key={i} className="font-bold text-gray-900">
-        {part}
-      </strong>
-    ) : (
-      part
-    )
+  return (
+    <>
+      {parts.map((part, i) =>
+        part.toLowerCase() === keyword.toLowerCase() ? (
+          <mark key={i} className="bg-yellow-200 text-gray-900 font-semibold rounded-sm px-0.5 not-italic">
+            {part}
+          </mark>
+        ) : (
+          part
+        )
+      )}
+    </>
   );
 }
 
