@@ -7,6 +7,8 @@ import { getSupabase, Article, ArticleStatus, RejectReason } from "@/lib/supabas
 // 상수
 // ============================================
 
+const PAGE_SIZE = 20;
+
 const SOURCE_LABELS: Record<string, string> = {
   naver_news: "뉴스",
   naver_blog: "블로그",
@@ -43,6 +45,7 @@ export default function Dashboard() {
   const [sending, setSending] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [showDuplicates, setShowDuplicates] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
 
   // 기사 로드
   const fetchArticles = useCallback(async () => {
@@ -74,6 +77,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     fetchArticles();
+    setCurrentPage(1);
   }, [fetchArticles]);
 
   // 토스트 메시지
@@ -263,6 +267,7 @@ export default function Dashboard() {
       : articles.filter((a) => selectedKeywords.has(a.keyword));
 
   const toggleKeyword = (kw: string) => {
+    setCurrentPage(1);
     setSelectedKeywords((prev) => {
       const next = new Set(prev);
       if (next.has(kw)) next.delete(kw);
@@ -270,6 +275,26 @@ export default function Dashboard() {
       return next;
     });
   };
+
+  // 날짜 범위
+  const dateRange = (() => {
+    const dates = articles
+      .map((a) => a.collected_at || a.published_at)
+      .filter(Boolean)
+      .map((d) => new Date(d!).getTime())
+      .filter((t) => !isNaN(t));
+    if (dates.length === 0) return null;
+    const fmt = (t: number) =>
+      new Date(t).toLocaleDateString("ko-KR", { year: "numeric", month: "2-digit", day: "2-digit" });
+    return { min: fmt(Math.min(...dates)), max: fmt(Math.max(...dates)) };
+  })();
+
+  // 페이지네이션
+  const totalPages = Math.max(1, Math.ceil(filteredArticles.length / PAGE_SIZE));
+  const pagedArticles = filteredArticles.slice(
+    (currentPage - 1) * PAGE_SIZE,
+    currentPage * PAGE_SIZE
+  );
 
   // 통계
   const stats = {
@@ -290,9 +315,13 @@ export default function Dashboard() {
             <h1 className="text-xl font-bold text-gray-900">
               뉴스봇 대시보드
             </h1>
-            <p className="text-sm text-gray-500 mt-0.5">
-              브랜드 모니터링 리뷰
-            </p>
+            {dateRange ? (
+              <p className="text-sm text-gray-500 mt-0.5">
+                조회 기간: {dateRange.min} ~ {dateRange.max}
+              </p>
+            ) : (
+              <p className="text-sm text-gray-500 mt-0.5">브랜드 모니터링 리뷰</p>
+            )}
           </div>
           <div className="flex gap-2">
             <button
@@ -504,27 +533,82 @@ export default function Dashboard() {
             기사가 없습니다
           </div>
         ) : (
-          <div className="space-y-2">
-            {filteredArticles.map((article) => (
-              <ArticleRow
-                key={article.id}
-                article={article}
-                selected={selectedIds.has(article.id)}
-                onSelect={() => {
-                  setSelectedIds((prev) => {
-                    const next = new Set(prev);
-                    if (next.has(article.id)) {
-                      next.delete(article.id);
-                    } else {
-                      next.add(article.id);
-                    }
-                    return next;
-                  });
-                }}
-                onUpdateStatus={updateStatus}
-              />
-            ))}
-          </div>
+          <>
+            <div className="space-y-2">
+              {pagedArticles.map((article) => (
+                <ArticleRow
+                  key={article.id}
+                  article={article}
+                  selected={selectedIds.has(article.id)}
+                  onSelect={() => {
+                    setSelectedIds((prev) => {
+                      const next = new Set(prev);
+                      if (next.has(article.id)) {
+                        next.delete(article.id);
+                      } else {
+                        next.add(article.id);
+                      }
+                      return next;
+                    });
+                  }}
+                  onUpdateStatus={updateStatus}
+                />
+              ))}
+            </div>
+
+            {/* 페이지네이션 */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-2 mt-6 pb-8">
+                <button
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className="px-3 py-1.5 text-sm bg-white border border-gray-200 rounded-md hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition"
+                >
+                  이전
+                </button>
+                <div className="flex gap-1">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1)
+                    .filter((p) => p === 1 || p === totalPages || Math.abs(p - currentPage) <= 2)
+                    .reduce<(number | "...")[]>((acc, p, idx, arr) => {
+                      if (idx > 0 && typeof arr[idx - 1] === "number" && (arr[idx - 1] as number) < p - 1) {
+                        acc.push("...");
+                      }
+                      acc.push(p);
+                      return acc;
+                    }, [])
+                    .map((item, idx) =>
+                      item === "..." ? (
+                        <span key={`ellipsis-${idx}`} className="px-2 py-1.5 text-sm text-gray-400">
+                          …
+                        </span>
+                      ) : (
+                        <button
+                          key={item}
+                          onClick={() => setCurrentPage(item as number)}
+                          className={`w-8 h-8 text-sm rounded-md transition ${
+                            currentPage === item
+                              ? "bg-emerald-600 text-white"
+                              : "bg-white border border-gray-200 text-gray-700 hover:bg-gray-50"
+                          }`}
+                        >
+                          {item}
+                        </button>
+                      )
+                    )}
+                </div>
+                <button
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                  className="px-3 py-1.5 text-sm bg-white border border-gray-200 rounded-md hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition"
+                >
+                  다음
+                </button>
+                <span className="text-xs text-gray-400 ml-2">
+                  {(currentPage - 1) * PAGE_SIZE + 1}–{Math.min(currentPage * PAGE_SIZE, filteredArticles.length)} / {filteredArticles.length}건
+                </span>
+              </div>
+            )}
+          </>
         )}
       </main>
 
