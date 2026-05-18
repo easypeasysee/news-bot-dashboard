@@ -326,28 +326,28 @@ export default function Dashboard() {
       <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-bold text-gray-900">
+            <h1 className="text-2xl font-bold text-gray-900">
               뉴스봇 대시보드
             </h1>
             {dateRange ? (
-              <p className="text-sm text-gray-500 mt-0.5">
+              <p className="text-base text-gray-500 mt-0.5">
                 조회 기간: {dateRange.min} ~ {dateRange.max}
               </p>
             ) : (
-              <p className="text-sm text-gray-500 mt-0.5">브랜드 모니터링 리뷰</p>
+              <p className="text-base text-gray-500 mt-0.5">브랜드 모니터링 리뷰</p>
             )}
           </div>
           <div className="flex gap-2">
             <button
               onClick={fetchArticles}
-              className="px-3 py-1.5 text-sm bg-gray-100 hover:bg-gray-200 rounded-md transition"
+              className="px-3 py-1.5 text-base bg-gray-100 hover:bg-gray-200 rounded-md transition"
             >
               새로고침
             </button>
             <button
               onClick={sendToSlack}
               disabled={sending || stats.approved === 0}
-              className="px-4 py-1.5 text-sm bg-emerald-600 text-white hover:bg-emerald-700 rounded-md transition disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-4 py-1.5 text-base bg-emerald-600 text-white hover:bg-emerald-700 rounded-md transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {sending ? "발송 중..." : `Slack 발송 (${stats.approved}건)`}
             </button>
@@ -376,8 +376,8 @@ export default function Dashboard() {
                   : "hover:opacity-80"
               }`}
             >
-              <div className="text-2xl font-bold">{s.value}</div>
-              <div className="text-xs mt-1">{s.label}</div>
+              <div className="text-3xl font-bold">{s.value}</div>
+              <div className="text-sm mt-1">{s.label}</div>
             </div>
           ))}
         </div>
@@ -389,7 +389,7 @@ export default function Dashboard() {
             <select
               value={sourceFilter}
               onChange={(e) => setSourceFilter(e.target.value)}
-              className="text-sm border border-gray-200 rounded-md px-2 py-1"
+              className="text-base border border-gray-200 rounded-md px-2 py-1"
             >
               <option value="all">모든 소스</option>
               {Object.entries(SOURCE_LABELS).map(([val, label]) => (
@@ -405,7 +405,7 @@ export default function Dashboard() {
             <div className="flex flex-wrap gap-1 mt-3 pt-3 border-t border-gray-100">
               <button
                 onClick={() => setSelectedKeywords(new Set())}
-                className={`px-2.5 py-1 text-xs rounded-full transition ${
+                className={`px-2.5 py-1 text-sm rounded-full transition ${
                   selectedKeywords.size === 0
                     ? "bg-emerald-600 text-white"
                     : "bg-gray-100 text-gray-700 hover:bg-gray-200"
@@ -417,7 +417,7 @@ export default function Dashboard() {
                 <button
                   key={kw}
                   onClick={() => toggleKeyword(kw)}
-                  className={`px-2.5 py-1 text-xs rounded-full transition ${
+                  className={`px-2.5 py-1 text-sm rounded-full transition ${
                     selectedKeywords.has(kw)
                       ? "bg-emerald-600 text-white"
                       : "bg-gray-100 text-gray-700 hover:bg-gray-200"
@@ -432,12 +432,12 @@ export default function Dashboard() {
           {/* 일괄 액션 */}
           {selectedIds.size > 0 && (
             <div className="flex gap-2 mt-3 pt-3 border-t border-gray-100">
-              <span className="text-sm text-gray-500 mr-2">
+              <span className="text-base text-gray-500 mr-2">
                 {selectedIds.size}건 선택
               </span>
               <button
                 onClick={bulkApprove}
-                className="px-3 py-1 text-xs bg-green-100 text-green-800 hover:bg-green-200 rounded-md"
+                className="px-3 py-1 text-sm bg-green-100 text-green-800 hover:bg-green-200 rounded-md"
               >
                 일괄 승인
               </button>
@@ -445,7 +445,7 @@ export default function Dashboard() {
                 <button
                   key={r.value}
                   onClick={() => bulkReject(r.value)}
-                  className="px-3 py-1 text-xs bg-red-50 text-red-700 hover:bg-red-100 rounded-md"
+                  className="px-3 py-1 text-sm bg-red-50 text-red-700 hover:bg-red-100 rounded-md"
                 >
                   제외: {r.label}
                 </button>
@@ -458,13 +458,13 @@ export default function Dashboard() {
             <div className="flex gap-2 mt-3 pt-3 border-t border-gray-100">
               <button
                 onClick={approveNonDuplicates}
-                className="px-3 py-1 text-xs bg-blue-50 text-blue-800 hover:bg-blue-100 rounded-md"
+                className="px-3 py-1 text-sm bg-blue-50 text-blue-800 hover:bg-blue-100 rounded-md"
               >
                 대표 기사만 전체 승인 (중복 의심 제외)
               </button>
               <button
                 onClick={toggleSelectAll}
-                className="px-3 py-1 text-xs bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-md"
+                className="px-3 py-1 text-sm bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-md"
               >
                 {selectedIds.size === filteredArticles.length
                   ? "전체 해제"
@@ -477,7 +477,7 @@ export default function Dashboard() {
         {/* 중복 의심 그룹 뷰 */}
         {showDuplicates && multiDupGroups.length > 0 && (
           <div className="mb-6 space-y-4">
-            <h2 className="text-sm font-semibold text-orange-800">
+            <h2 className="text-base font-semibold text-orange-800">
               중복 의심 그룹 ({multiDupGroups.length}개)
             </h2>
             {multiDupGroups.map(([groupId, group]) => (
@@ -485,7 +485,7 @@ export default function Dashboard() {
                 key={groupId}
                 className="bg-orange-50 border border-orange-200 rounded-lg p-4"
               >
-                <div className="text-xs text-orange-600 mb-2">
+                <div className="text-sm text-orange-600 mb-2">
                   {group.length}건 유사 기사
                 </div>
                 {group.map((article) => (
@@ -498,7 +498,7 @@ export default function Dashboard() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         {article.is_duplicate_primary && (
-                          <span className="text-[10px] bg-orange-200 text-orange-800 px-1.5 py-0.5 rounded">
+                          <span className="text-[12px] bg-orange-200 text-orange-800 px-1.5 py-0.5 rounded">
                             대표
                           </span>
                         )}
@@ -506,12 +506,12 @@ export default function Dashboard() {
                           href={article.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-sm font-medium text-gray-900 hover:text-blue-600 truncate"
+                          className="text-base font-medium text-gray-900 hover:text-blue-600 truncate"
                         >
                           {article.title}
                         </a>
                       </div>
-                      <div className="text-xs text-gray-500 mt-1">
+                      <div className="text-sm text-gray-500 mt-1">
                         {SOURCE_LABELS[article.source_type]} |{" "}
                         {article.publisher || "-"}
                       </div>
@@ -519,7 +519,7 @@ export default function Dashboard() {
                     <div className="flex gap-1">
                       <button
                         onClick={() => updateStatus(article.id, "approved")}
-                        className="px-2 py-1 text-[10px] bg-green-100 text-green-700 hover:bg-green-200 rounded"
+                        className="px-2 py-1 text-[12px] bg-green-100 text-green-700 hover:bg-green-200 rounded"
                       >
                         승인
                       </button>
@@ -527,7 +527,7 @@ export default function Dashboard() {
                         onClick={() =>
                           updateStatus(article.id, "rejected", "duplicate")
                         }
-                        className="px-2 py-1 text-[10px] bg-red-50 text-red-700 hover:bg-red-100 rounded"
+                        className="px-2 py-1 text-[12px] bg-red-50 text-red-700 hover:bg-red-100 rounded"
                       >
                         중복제외
                       </button>
@@ -549,7 +549,7 @@ export default function Dashboard() {
         ) : (
           <>
             {/* 리스트 헤더 - 전체 선택 */}
-            <div className="flex items-center gap-3 px-4 py-2 mb-1 bg-gray-50 rounded-lg border border-gray-200 text-xs text-gray-500">
+            <div className="flex items-center gap-3 px-4 py-2 mb-1 bg-gray-50 rounded-lg border border-gray-200 text-sm text-gray-500">
               <input
                 type="checkbox"
                 checked={pagedArticles.length > 0 && pagedArticles.every((a) => selectedIds.has(a.id))}
@@ -604,7 +604,7 @@ export default function Dashboard() {
                 <button
                   onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                   disabled={currentPage === 1}
-                  className="px-3 py-1.5 text-sm bg-white border border-gray-200 rounded-md hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition"
+                  className="px-3 py-1.5 text-base bg-white border border-gray-200 rounded-md hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition"
                 >
                   이전
                 </button>
@@ -620,14 +620,14 @@ export default function Dashboard() {
                     }, [])
                     .map((item, idx) =>
                       item === "..." ? (
-                        <span key={`ellipsis-${idx}`} className="px-2 py-1.5 text-sm text-gray-400">
+                        <span key={`ellipsis-${idx}`} className="px-2 py-1.5 text-base text-gray-400">
                           …
                         </span>
                       ) : (
                         <button
                           key={item}
                           onClick={() => setCurrentPage(item as number)}
-                          className={`w-8 h-8 text-sm rounded-md transition ${
+                          className={`w-8 h-8 text-base rounded-md transition ${
                             currentPage === item
                               ? "bg-emerald-600 text-white"
                               : "bg-white border border-gray-200 text-gray-700 hover:bg-gray-50"
@@ -641,11 +641,11 @@ export default function Dashboard() {
                 <button
                   onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                   disabled={currentPage === totalPages}
-                  className="px-3 py-1.5 text-sm bg-white border border-gray-200 rounded-md hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition"
+                  className="px-3 py-1.5 text-base bg-white border border-gray-200 rounded-md hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition"
                 >
                   다음
                 </button>
-                <span className="text-xs text-gray-400 ml-2">
+                <span className="text-sm text-gray-400 ml-2">
                   {(currentPage - 1) * PAGE_SIZE + 1}–{Math.min(currentPage * PAGE_SIZE, filteredArticles.length)} / {filteredArticles.length}건
                 </span>
               </div>
@@ -656,7 +656,7 @@ export default function Dashboard() {
 
       {/* 토스트 */}
       {toast && (
-        <div className="fixed bottom-6 right-6 bg-gray-900 text-white px-4 py-2 rounded-lg shadow-lg text-sm z-50 animate-fade-in">
+        <div className="fixed bottom-6 right-6 bg-gray-900 text-white px-4 py-2 rounded-lg shadow-lg text-base z-50 animate-fade-in">
           {toast}
         </div>
       )}
@@ -735,19 +735,19 @@ function ArticleRow({
         {/* 콘텐츠 */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-[10px] bg-emerald-100 text-emerald-800 font-medium px-1.5 py-0.5 rounded">
+            <span className="text-[12px] bg-emerald-100 text-emerald-800 font-medium px-1.5 py-0.5 rounded">
               {KEYWORD_TYPE_LABELS[article.keyword_type]}: {article.keyword}
             </span>
-            <span className="text-[10px] bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded">
+            <span className="text-[12px] bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded">
               {SOURCE_LABELS[article.source_type]}
             </span>
             {article.publisher && (
-              <span className="text-[10px] bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded">
+              <span className="text-[12px] bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded">
                 {article.publisher}
               </span>
             )}
             {!article.is_duplicate_primary && (
-              <span className="text-[10px] bg-orange-100 text-orange-700 px-1.5 py-0.5 rounded">
+              <span className="text-[12px] bg-orange-100 text-orange-700 px-1.5 py-0.5 rounded">
                 중복 의심
               </span>
             )}
@@ -757,18 +757,18 @@ function ArticleRow({
             href={article.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-sm font-medium text-gray-900 hover:text-blue-600 line-clamp-1"
+            className="text-base font-medium text-gray-900 hover:text-blue-600 line-clamp-1"
           >
             {highlight(article.title, article.keyword)}
           </a>
 
           {article.description && (
-            <p className="text-xs text-gray-500 mt-1 line-clamp-2">
+            <p className="text-sm text-gray-500 mt-1 line-clamp-2">
               {highlight(article.description, article.keyword)}
             </p>
           )}
 
-          <div className="flex items-center gap-3 mt-2 text-[11px] text-gray-400">
+          <div className="flex items-center gap-3 mt-2 text-[13px] text-gray-400">
             {article.published_at && (
               <span>
                 {new Date(article.published_at).toLocaleDateString("ko-KR")}
@@ -782,14 +782,14 @@ function ArticleRow({
           <div className="flex gap-1 flex-shrink-0">
             <button
               onClick={() => onUpdateStatus(article.id, "approved")}
-              className="px-3 py-1.5 text-xs bg-green-100 text-green-700 hover:bg-green-200 rounded-md transition"
+              className="px-3 py-1.5 text-sm bg-green-100 text-green-700 hover:bg-green-200 rounded-md transition"
             >
               승인
             </button>
             <div className="relative">
               <button
                 onClick={() => setShowRejectMenu(!showRejectMenu)}
-                className="px-3 py-1.5 text-xs bg-red-50 text-red-700 hover:bg-red-100 rounded-md transition"
+                className="px-3 py-1.5 text-sm bg-red-50 text-red-700 hover:bg-red-100 rounded-md transition"
               >
                 제외
               </button>
@@ -802,7 +802,7 @@ function ArticleRow({
                         onUpdateStatus(article.id, "rejected", r.value);
                         setShowRejectMenu(false);
                       }}
-                      className="block w-full text-left px-3 py-1.5 text-xs hover:bg-gray-50 text-gray-700"
+                      className="block w-full text-left px-3 py-1.5 text-sm hover:bg-gray-50 text-gray-700"
                     >
                       {r.label}
                     </button>
@@ -817,7 +817,7 @@ function ArticleRow({
         {article.status === "approved" && (
           <button
             onClick={() => onUpdateStatus(article.id, "pending")}
-            className="px-3 py-1.5 text-xs bg-gray-100 text-gray-600 hover:bg-gray-200 rounded-md transition flex-shrink-0"
+            className="px-3 py-1.5 text-sm bg-gray-100 text-gray-600 hover:bg-gray-200 rounded-md transition flex-shrink-0"
           >
             되돌리기
           </button>
@@ -827,7 +827,7 @@ function ArticleRow({
         {article.status === "rejected" && (
           <button
             onClick={() => onUpdateStatus(article.id, "pending")}
-            className="px-3 py-1.5 text-xs bg-gray-100 text-gray-600 hover:bg-gray-200 rounded-md transition flex-shrink-0"
+            className="px-3 py-1.5 text-sm bg-gray-100 text-gray-600 hover:bg-gray-200 rounded-md transition flex-shrink-0"
           >
             복원
           </button>
