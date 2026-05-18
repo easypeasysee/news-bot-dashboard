@@ -637,6 +637,25 @@ export default function Dashboard() {
 }
 
 // ============================================
+// 키워드 하이라이트 헬퍼
+// ============================================
+
+function highlight(text: string, keyword: string) {
+  if (!keyword || !text) return text;
+  const escaped = keyword.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const parts = text.split(new RegExp(`(${escaped})`, "gi"));
+  return parts.map((part, i) =>
+    part.toLowerCase() === keyword.toLowerCase() ? (
+      <strong key={i} className="font-bold text-gray-900">
+        {part}
+      </strong>
+    ) : (
+      part
+    )
+  );
+}
+
+// ============================================
 // 기사 행 컴포넌트
 // ============================================
 
@@ -708,12 +727,12 @@ function ArticleRow({
             rel="noopener noreferrer"
             className="text-sm font-medium text-gray-900 hover:text-blue-600 line-clamp-1"
           >
-            {article.title}
+            {highlight(article.title, article.keyword)}
           </a>
 
           {article.description && (
             <p className="text-xs text-gray-500 mt-1 line-clamp-2">
-              {article.description}
+              {highlight(article.description, article.keyword)}
             </p>
           )}
 
